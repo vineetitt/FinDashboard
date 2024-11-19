@@ -1,4 +1,4 @@
-﻿namespace FinDashboard.API.Models.DTOs
+﻿namespace FinDashboard.API.Models.DTOs.UserDto
 {
     public class UpdateUserDto
     {

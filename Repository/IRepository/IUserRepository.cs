@@ -1,5 +1,5 @@
 ﻿using FinDashboard.API.Models.Domain;
-using FinDashboard.API.Models.DTOs;
+using FinDashboard.API.Models.DTOs.UserDto;
 
 namespace FinDashboard.API.Repository.IRepository
 {

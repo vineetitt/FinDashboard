@@ -1,6 +1,6 @@
 ﻿using FinDashboard.API.Data;
 using FinDashboard.API.Models.Domain;
-using FinDashboard.API.Models.DTOs;
+using FinDashboard.API.Models.DTOs.UserDto;
 using FinDashboard.API.Repository.IRepository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
