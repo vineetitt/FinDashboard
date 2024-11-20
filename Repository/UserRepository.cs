@@ -50,7 +50,7 @@ namespace FinDashboard.API.Repository
         {
             var user = finDashboardDbContext.Users
                 .Include(u => u.Portfolio)
-                    .ThenInclude(p => p.Assets)
+                    .ThenInclude(p => p.Holdings)
                 .FirstOrDefault(u => u.UserID == userId);
             if (user != null)
             {

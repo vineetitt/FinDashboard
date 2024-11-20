@@ -1,8 +1,8 @@
 ﻿namespace FinDashboard.API.Models.DTOs.AssetDto
 {
-    public class AddAssetDto
+    public class AddStockDto
     {
-        public string AssetName { get; set; } = string.Empty;
+        public string StockName { get; set; } = string.Empty;
         public decimal Quantity { get; set; }
         //public decimal CurrentPrice { get; set; }
         //public decimal HighPrice { get; set; }

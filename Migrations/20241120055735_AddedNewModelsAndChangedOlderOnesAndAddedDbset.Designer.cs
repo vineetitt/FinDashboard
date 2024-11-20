@@ -4,6 +4,7 @@ using FinDashboard.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinDashboard.API.Migrations
 {
     [DbContext(typeof(FinDashboardDbContext))]
-    partial class FinDashboardDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241120055735_AddedNewModelsAndChangedOlderOnesAndAddedDbset")]
+    partial class AddedNewModelsAndChangedOlderOnesAndAddedDbset
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,32 +27,29 @@ namespace FinDashboard.API.Migrations
 
             modelBuilder.Entity("FinDashboard.API.Models.Domain.Holding", b =>
                 {
-                    b.Property<int>("HoldingID")
+                    b.Property<int>("HoldingId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HoldingID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HoldingId"));
 
                     b.Property<int>("PortfolioID")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("PurchasePrice")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("StockID")
+                    b.Property<int>("StockId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("TotalInvested")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("HoldingID");
+                    b.HasKey("HoldingId");
 
                     b.HasIndex("PortfolioID");
 
-                    b.HasIndex("StockID");
+                    b.HasIndex("StockId");
 
                     b.ToTable("Holdings");
                 });
@@ -79,33 +79,6 @@ namespace FinDashboard.API.Migrations
                     b.ToTable("Portfolios");
                 });
 
-            modelBuilder.Entity("FinDashboard.API.Models.Domain.PortfolioPerformanceHistory", b =>
-                {
-                    b.Property<int>("PortfolioPerformanceHistoryID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PortfolioPerformanceHistoryID"));
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("InvestedValue")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("PortfolioID")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("PortfolioValue")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("PortfolioPerformanceHistoryID");
-
-                    b.HasIndex("PortfolioID");
-
-                    b.ToTable("PortfolioPerformanceHistories");
-                });
-
             modelBuilder.Entity("FinDashboard.API.Models.Domain.Stock", b =>
                 {
                     b.Property<int>("StockID")
@@ -129,6 +102,9 @@ namespace FinDashboard.API.Migrations
                     b.Property<decimal>("OpenPrice")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("PortfolioId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
@@ -138,31 +114,9 @@ namespace FinDashboard.API.Migrations
 
                     b.HasKey("StockID");
 
+                    b.HasIndex("PortfolioId");
+
                     b.ToTable("Stock");
-                });
-
-            modelBuilder.Entity("FinDashboard.API.Models.Domain.StockPriceHistory", b =>
-                {
-                    b.Property<int>("StockPriceHistoryID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StockPriceHistoryID"));
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("StockID")
-                        .HasColumnType("int");
-
-                    b.HasKey("StockPriceHistoryID");
-
-                    b.HasIndex("StockID");
-
-                    b.ToTable("StockPriceHistories");
                 });
 
             modelBuilder.Entity("FinDashboard.API.Models.Domain.User", b =>
@@ -199,14 +153,14 @@ namespace FinDashboard.API.Migrations
             modelBuilder.Entity("FinDashboard.API.Models.Domain.Holding", b =>
                 {
                     b.HasOne("FinDashboard.API.Models.Domain.Portfolio", "Portfolio")
-                        .WithMany("Holdings")
+                        .WithMany()
                         .HasForeignKey("PortfolioID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FinDashboard.API.Models.Domain.Stock", "Stock")
-                        .WithMany()
-                        .HasForeignKey("StockID")
+                        .WithMany("Holdings")
+                        .HasForeignKey("StockId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -226,29 +180,19 @@ namespace FinDashboard.API.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("FinDashboard.API.Models.Domain.PortfolioPerformanceHistory", b =>
+            modelBuilder.Entity("FinDashboard.API.Models.Domain.Stock", b =>
                 {
-                    b.HasOne("FinDashboard.API.Models.Domain.Portfolio", "Portfolio")
-                        .WithMany()
-                        .HasForeignKey("PortfolioID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Portfolio");
-                });
-
-            modelBuilder.Entity("FinDashboard.API.Models.Domain.StockPriceHistory", b =>
-                {
-                    b.HasOne("FinDashboard.API.Models.Domain.Stock", "Stock")
-                        .WithMany()
-                        .HasForeignKey("StockID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Stock");
+                    b.HasOne("FinDashboard.API.Models.Domain.Portfolio", null)
+                        .WithMany("Assets")
+                        .HasForeignKey("PortfolioId");
                 });
 
             modelBuilder.Entity("FinDashboard.API.Models.Domain.Portfolio", b =>
+                {
+                    b.Navigation("Assets");
+                });
+
+            modelBuilder.Entity("FinDashboard.API.Models.Domain.Stock", b =>
                 {
                     b.Navigation("Holdings");
                 });

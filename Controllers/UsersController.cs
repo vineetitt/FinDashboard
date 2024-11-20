@@ -39,16 +39,11 @@ namespace FinDashboard.API.Controllers
                     PasswordHash = addUserDto.HashPassword,
                     Portfolio = new Portfolio()
                     {
-                        Assets = new List<Asset>()
+                        Holdings = new List<Holding>()
                     }
                 };
 
                 var createdUser = userRepository.AddUser(user);
-                //var result = new AddUserDto()
-                //{
-                //    Email = createdUser.Email,
-                //    UserName = createdUser.UserName,
-                //};
                 return Ok();
             }
             catch (CustomException ex)

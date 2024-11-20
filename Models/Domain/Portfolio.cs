@@ -6,9 +6,9 @@
         public int UserId { get; set; }
         public decimal CurrentValue { get; set; } = 0;
         public decimal InvestedValue { get; set; } = 0;
-
+        public decimal ProfitLoss => CurrentValue - InvestedValue;
         public virtual User User { get; set; }
-        public virtual ICollection<Asset> Assets { get; set; } = new List<Asset>();
+        public virtual ICollection<Holding> Holdings { get; set; } = new List<Holding>();
 
     }
 }
