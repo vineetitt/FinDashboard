@@ -20,6 +20,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
 builder.Services.AddScoped<IStockRepository, StockRepository>();
+builder.Services.AddScoped<IHoldingRepository, HoldingRepository>();
 builder.Services.AddDbContext<FinDashboardDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("FinDashboardConnectionString")));
 

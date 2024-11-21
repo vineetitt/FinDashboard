@@ -6,6 +6,7 @@ namespace FinDashboard.API.Repository.IRepository
     {
         Portfolio GetPortfolioByUserId(int userId);
         bool UpdatePortfolioByUserId(int userId, int investedValue);
+        bool AddPortfolioByUserId(int userId);
 
     }
 }

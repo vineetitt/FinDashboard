@@ -29,6 +29,7 @@ namespace FinDashboard.API.Controllers
             {
                 return BadRequest(ex.Message);
             }
+
         }
 
         [HttpPatch]
@@ -47,6 +48,7 @@ namespace FinDashboard.API.Controllers
             {
                 return BadRequest(ex.Message);
             }
+
         }
 
         [HttpDelete]
@@ -65,13 +67,22 @@ namespace FinDashboard.API.Controllers
             {
                 return BadRequest(ex.Message);
             }
+
         }
 
         [HttpGet]
         public IActionResult GetAllStock()
         {
-            var getStocks = stockRepository.GetAllStock();
-            return Ok(getStocks);
+            try
+            {
+                var getStocks = stockRepository.GetAllStock();
+                return Ok(getStocks);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
     }
 }

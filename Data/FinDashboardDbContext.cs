@@ -15,6 +15,6 @@ namespace FinDashboard.API.Data
         public DbSet<Holding> Holdings { get; set; }
         public DbSet<PortfolioPerformanceHistory> PortfolioPerformanceHistories { get; set; }
         public DbSet<StockPriceHistory> StockPriceHistories { get; set; }
-
+        public DbSet<Transaction> Transactions { get; set; }
     }
 }

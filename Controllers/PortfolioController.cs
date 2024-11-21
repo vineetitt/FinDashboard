@@ -1,5 +1,6 @@
 ﻿using FinDashboard.API.Data;
 using FinDashboard.API.Models.Domain;
+using FinDashboard.API.Repository;
 using FinDashboard.API.Repository.IRepository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,7 @@ namespace FinDashboard.API.Controllers
             this.portfolioRepository = portfolioRepository;
         }
 
-        [HttpGet]
+        [HttpGet("getAllUser")]
         public IActionResult GetPortfolioByUserId(int userId)
         {
             try
@@ -49,12 +50,31 @@ namespace FinDashboard.API.Controllers
             {
                 return StatusCode(ex.statusCode, ex.Message);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
 
         }
+
+        [HttpPost]
+        public IActionResult AddPortfolioByUserId(int userId)
+        {
+            try
+            {
+                var isPortfolioCreated = portfolioRepository.AddPortfolioByUserId(userId);
+                return Ok("added");
+            }
+            catch (CustomException ex)
+            {
+                return StatusCode(ex.statusCode, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
+        }
+
 
     }
 }

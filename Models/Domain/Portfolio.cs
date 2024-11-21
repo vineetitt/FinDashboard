@@ -9,6 +9,7 @@
         public decimal ProfitLoss => CurrentValue - InvestedValue;
         public virtual User User { get; set; }
         public virtual ICollection<Holding> Holdings { get; set; } = new List<Holding>();
+        public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
 
     }
 }

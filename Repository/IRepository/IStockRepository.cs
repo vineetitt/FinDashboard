@@ -10,7 +10,6 @@ namespace FinDashboard.API.Repository.IRepository
         bool AddStock(AddStockDto addAssetDto);
         bool UpdateStock(int stockId, UpdateStockDto updateStockDto);
         bool DeleteStock(int stockId);
-
         List<Stock> GetAllStock();
     }
 }

@@ -10,10 +10,12 @@ namespace FinDashboard.API.Repository
     public class UserRepository : IUserRepository
     {
         private readonly FinDashboardDbContext finDashboardDbContext;
+        private readonly IPortfolioRepository portfolioRepository;
 
-        public UserRepository(FinDashboardDbContext finDashboardDbContext)
+        public UserRepository(FinDashboardDbContext finDashboardDbContext, IPortfolioRepository portfolioRepository)
         {
             this.finDashboardDbContext = finDashboardDbContext;
+            this.portfolioRepository = portfolioRepository;
         }
 
         public bool AddUser(User user)
@@ -35,14 +37,7 @@ namespace FinDashboard.API.Repository
 
             finDashboardDbContext.Users.Add(user);
             finDashboardDbContext.SaveChanges();
-
-            var portfolio = new Portfolio()
-            {
-                UserId = user.UserID,
-                CurrentValue = 0,
-                InvestedValue = 0,
-            };
-            finDashboardDbContext.Portfolios.Add(portfolio);
+            portfolioRepository.AddPortfolioByUserId(user.UserID);
             return true;
         }
 
@@ -83,17 +78,38 @@ namespace FinDashboard.API.Repository
 
         public bool DeleteUserById(int id)
         {
-            var userToDelete = finDashboardDbContext.Users.FirstOrDefault(user => user.UserID == id);
-
-            if (userToDelete != null)
+            using var transaction = finDashboardDbContext.Database.BeginTransaction();
+            try
             {
-                userToDelete.IsActive = false;
+                var userToDelete = finDashboardDbContext.Users
+                    .Include(u => u.Portfolio)
+                        .ThenInclude(p => p.Holdings)
+                    .Include(u => u.Portfolio)
+                        .ThenInclude(p => p.Transactions)
+                    //.Include(u=>u.Portfolio) 
+                    //    .ThenInclude(p=>p.)
+                    .FirstOrDefault(u => u.UserID == id);
+                if (userToDelete == null)
+                {
+                    throw new CustomException($"User with userId: {id} not found", 404);
+                }
+                if (userToDelete.Portfolio.Transactions.Any())
+                {
+                    finDashboardDbContext.Transactions.RemoveRange(userToDelete.Portfolio.Transactions);
+                }
+                if (userToDelete.Portfolio.Holdings.Any())
+                {
+                    finDashboardDbContext.Holdings.RemoveRange(userToDelete.Portfolio.Holdings);
+                }
+                finDashboardDbContext.Users.Remove(userToDelete);
                 finDashboardDbContext.SaveChanges();
+                transaction.Commit();
                 return true;
             }
-            else
+            catch (Exception ex)
             {
-                throw new CustomException($"User with userId: {id} not found", 200);
+                transaction.Rollback();
+                throw new CustomException($"Failed to delete user with userId: {id}", 500);
             }
         }
     }

@@ -6,7 +6,6 @@
             public int StockID { get; set; }
             public DateTime Date { get; set; }
             public decimal Price { get; set; }
-
             public virtual Stock Stock { get; set; }
 
     }
