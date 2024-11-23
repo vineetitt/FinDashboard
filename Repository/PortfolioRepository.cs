@@ -36,7 +36,7 @@ namespace FinDashboard.API.Repository
                 return true;
             }
             throw new CustomException($"Portfolio with this id:{userId} does not exixts", 200);
-        }  //Cuurent value can also be changed so apply that also
+        }  
 
         public bool AddPortfolioByUserId(int userId)
         {
@@ -52,7 +52,7 @@ namespace FinDashboard.API.Repository
                 {
                     UserId = user.UserID,
                     InvestedValue = 0,
-                    CurrentValue = 0
+                    //CurrentValue = 0
                 };
                 finDashboardDbContext.Add(portfolio);
                 finDashboardDbContext.SaveChanges();

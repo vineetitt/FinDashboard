@@ -2,6 +2,7 @@ using FinDashboard.API.Data;
 using FinDashboard.API.Repository.IRepository;
 using FinDashboard.API.Repository;
 using Microsoft.EntityFrameworkCore;
+using FinDashboard.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,8 +22,10 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
 builder.Services.AddScoped<IStockRepository, StockRepository>();
 builder.Services.AddScoped<IHoldingRepository, HoldingRepository>();
+builder.Services.AddHostedService<StockDataUpdater>();
 builder.Services.AddDbContext<FinDashboardDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("FinDashboardConnectionString")));
+builder.Services.AddHttpClient<FinHubService>();
 
 var app = builder.Build();
 

@@ -1,4 +1,5 @@
 ﻿using FinDashboard.API.Models.DTOs;
+using FinDashboard.API.Models.DTOs.HoldingDto;
 using FinDashboard.API.Repository.IRepository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -28,12 +29,34 @@ namespace FinDashboard.API.Controllers
             {
                 return StatusCode(ex.statusCode, ex.Message);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-
-
         }
+
+        //[HttpPost]
+        //public IActionResult ReleaseStock(SellStockDto sellStockDto)
+        //{
+        //    try
+        //    {
+        //        holdingRepository.SellStock(sellStockDto);
+        //        return Ok(
+        //            new
+        //            {
+        //                Message = "Stock Sold Successfully"
+        //            }
+        //        );
+        //    }
+        //    catch (CustomException ex)
+        //    {
+        //        return StatusCode(ex.statusCode, ex.Message);
+        //    }
+        //    catch(Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+
+        //}
     }
 }

@@ -18,11 +18,11 @@ namespace FinDashboard.API.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddStock(AddStockDto addStockDto)
+        public async Task<IActionResult> AddStock(AddStockDto addStockDto)
         {
             try
             {
-                var isAssetAdded = stockRepository.AddStock(addStockDto);
+                var isAssetAdded = await stockRepository.AddStock(addStockDto);
                 return Ok("Added");
             }
             catch (Exception ex)

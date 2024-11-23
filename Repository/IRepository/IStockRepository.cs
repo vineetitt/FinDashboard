@@ -7,8 +7,8 @@ namespace FinDashboard.API.Repository.IRepository
 {
     public interface IStockRepository
     {
-        bool AddStock(AddStockDto addAssetDto);
-        bool UpdateStock(int stockId, UpdateStockDto updateStockDto);
+        Task<bool> AddStock(AddStockDto addAssetDto);
+        Task<bool> UpdateStock(int stockId, UpdateStockDto updateStockDto);
         bool DeleteStock(int stockId);
         List<Stock> GetAllStock();
     }
