@@ -35,28 +35,24 @@ namespace FinDashboard.API.Controllers
             }
         }
 
-        //[HttpPost]
-        //public IActionResult ReleaseStock(SellStockDto sellStockDto)
-        //{
-        //    try
-        //    {
-        //        holdingRepository.SellStock(sellStockDto);
-        //        return Ok(
-        //            new
-        //            {
-        //                Message = "Stock Sold Successfully"
-        //            }
-        //        );
-        //    }
-        //    catch (CustomException ex)
-        //    {
-        //        return StatusCode(ex.statusCode, ex.Message);
-        //    }
-        //    catch(Exception ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
+        [HttpDelete]
+        public IActionResult SellUserStock(AddHoldingDto addHoldingDto)
+        {
+            try
+            {
+                var isStockSold = holdingRepository.SellUserStock(addHoldingDto);
+                return Ok("Stock Sold");
+            }
+            catch (CustomException ex)
+            {
+                return StatusCode(ex.statusCode, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
-        //}
+        }
+
     }
 }

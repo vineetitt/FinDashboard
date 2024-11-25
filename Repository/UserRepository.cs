@@ -4,6 +4,9 @@ using FinDashboard.API.Models.DTOs.UserDto;
 using FinDashboard.API.Repository.IRepository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using FinDashboard.API.Utilities;
+using System;
+using BCrypt.Net;
 
 namespace FinDashboard.API.Repository
 {
@@ -18,6 +21,14 @@ namespace FinDashboard.API.Repository
             this.portfolioRepository = portfolioRepository;
         }
 
+        public string HashPassword(string password)
+        {
+            return BCrypt.Net.BCrypt.HashPassword(password);
+        }
+        public bool VerifyPassword(string password, string hashedPassword)
+        {
+            return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+        }
         public bool AddUser(User user)
         {
             var existingUser = finDashboardDbContext.Users.FirstOrDefault(u => u.Email == user.Email || u.Username == user.Username);
@@ -35,6 +46,8 @@ namespace FinDashboard.API.Repository
 
             }
 
+            var hashedPassword = HashPassword(user.PasswordHash);
+            user.PasswordHash = hashedPassword;
             finDashboardDbContext.Users.Add(user);
             finDashboardDbContext.SaveChanges();
             portfolioRepository.AddPortfolioByUserId(user.UserID);

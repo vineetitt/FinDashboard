@@ -7,6 +7,6 @@ namespace FinDashboard.API.Repository.IRepository
     public interface IHoldingRepository
     {
         void BuyStock(AddHoldingDto addHoldingDto);
-        //void SellStock(SellStockDto sellStockDto);
+        bool SellUserStock(AddHoldingDto addHoldingDto);
     }
 }

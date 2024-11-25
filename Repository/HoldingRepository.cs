@@ -18,99 +18,108 @@ namespace FinDashboard.API.Repository
 
         public void BuyStock(AddHoldingDto addHoldingDto)
         {
-            var portfolio = finDashboardDbContext.Portfolios.FirstOrDefault(p => p.PortfolioId == addHoldingDto.PortfolioId);
-            var existingHolding = finDashboardDbContext.Holdings.FirstOrDefault(h => h.PortfolioID == addHoldingDto.PortfolioId && h.StockID == addHoldingDto.StockId);
+            var user = finDashboardDbContext.Users.FirstOrDefault(u => u.UserID == addHoldingDto.UserId);
+            finDashboardDbContext.Users
+                .Include(u => u.Portfolio)
+                .FirstOrDefault(u => u.UserID == addHoldingDto.UserId);
+            var portfolio = user.Portfolio;
             var stock = finDashboardDbContext.Stock.FirstOrDefault(s => s.StockID == addHoldingDto.StockId);
-            var allStock = finDashboardDbContext.Stock.ToList();
+
+            if(stock == null)
+            {
+                throw new CustomException($"Stock is not in the list ", 404);
+            }
+            var existingHolding = finDashboardDbContext.Holdings.FirstOrDefault(h => h.PortfolioID == portfolio.PortfolioId && h.StockID == addHoldingDto.StockId);
             if (existingHolding != null)
             {
-
-                var newTotalInvested = existingHolding.TotalInvested + (addHoldingDto.Quantity * addHoldingDto.PurchasePrice);
-                
-                var newQuantity = existingHolding.Quantity + addHoldingDto.Quantity;
-
-                existingHolding.TotalInvested = newTotalInvested;
-                existingHolding.Quantity = newQuantity;
-                existingHolding.PurchasePrice = newTotalInvested / newQuantity;
-
-                portfolio.InvestedValue += addHoldingDto.Quantity * addHoldingDto.PurchasePrice;
-                finDashboardDbContext.Holdings.Update(existingHolding);
-                
-                stock.Quantity = stock.Quantity - addHoldingDto.Quantity;
+                existingHolding.Quantity += addHoldingDto.Quantity;
+                existingHolding.TotalInvested += addHoldingDto.Quantity * stock.CurrentPrice;
+                existingHolding.CurrentPrice = stock.CurrentPrice;
             }
             else
             {
                 var newHolding = new Holding
                 {
-                    PortfolioID = addHoldingDto.PortfolioId,
-                    StockID = addHoldingDto.StockId,
+                    StockID = stock.StockID,
                     Quantity = addHoldingDto.Quantity,
-                    PurchasePrice = addHoldingDto.PurchasePrice,
-                    TotalInvested = addHoldingDto.Quantity * addHoldingDto.PurchasePrice
+                    PurchasePrice = stock.CurrentPrice,
+                    TotalInvested = addHoldingDto.Quantity * stock.CurrentPrice,
+                    PortfolioID = portfolio.PortfolioId,
+                    CurrentPrice = stock.CurrentPrice
                 };
-
                 finDashboardDbContext.Holdings.Add(newHolding);
-                portfolio.InvestedValue += newHolding.TotalInvested;
-                stock.Quantity -= addHoldingDto.Quantity;
+                stock.Quantity-=addHoldingDto.Quantity;
             }
-            finDashboardDbContext.Portfolios.Update(portfolio);
-            var transaction = new Transaction
+            portfolio.InvestedValue += addHoldingDto.Quantity * stock.CurrentPrice;
+            portfolio.CurrentValue += addHoldingDto.Quantity * stock.CurrentPrice;
+            finDashboardDbContext.SaveChanges();
+            var transaction = new Transaction()
             {
-                PortfolioID = addHoldingDto.PortfolioId,
-                StockID = addHoldingDto.StockId,
                 Quantity = addHoldingDto.Quantity,
-                PricePerUnit = addHoldingDto.PurchasePrice,
+                PricePerUnit = stock.CurrentPrice,
+                TransactioDate = DateTime.Now,
                 TransactionType = "Buy",
-                TransactioDate = DateTime.UtcNow
+                PortfolioID = portfolio.PortfolioId,
+                StockID = stock.StockID,
             };
             finDashboardDbContext.Transactions.Add(transaction);
             finDashboardDbContext.SaveChanges();
         }
 
-        //public void SellStock(SellStockDto sellStockDto)
-        //{
-        //    var portfolio = finDashboardDbContext.Portfolios
-        //        .Include(p => p.Holdings)
-        //        .FirstOrDefault(p => p.PortfolioId == sellStockDto.PortfolioID);
-        //    if (portfolio == null)
-        //        throw new CustomException("Portfolio not found", 400);
+        public bool SellUserStock(AddHoldingDto addHoldingDto)
+        {
+            var user = finDashboardDbContext.Users
+                        .Include(p => p.Portfolio)
+                            .ThenInclude(h => h.Holdings)
+                        .FirstOrDefault(u => u.UserID == addHoldingDto.UserId);
 
-        //    var holding = portfolio.Holdings.FirstOrDefault(h => h.StockID == sellStockDto.StockId);
-        //    if (holding == null)
-        //        throw new CustomException("Holding not found.", 400);
+            if (user == null)
+            {
+                throw new CustomException("User not found", 404);
+            }
 
-        //    if (sellStockDto.Quantity <= 0)
-        //        throw new CustomException("Holding not found.", 400);
+            var portfolio = user.Portfolio;
 
-        //    if (sellStockDto.Quantity > holding.Quantity)
-        //        throw new CustomException("Holding not found.", 400);
+            if (portfolio == null)
+            {
+                throw new CustomException("Portfolio not found for the user", 404);
+            }
+            var holding = portfolio.Holdings.FirstOrDefault(h => h.StockID == addHoldingDto.StockId);
 
-        //    var transaction = new Transaction
-        //    {
-        //        StockID = sellStockDto.StockId,
-        //        PortfolioID = sellStockDto.PortfolioID,
-        //        TransactionType = "Sell",
-        //        Quantity = sellStockDto.Quantity,
-        //        PricePerUnit = sellStockDto.PurchasePrice,
-        //        TransactioDate = DateTime.UtcNow
-        //    };
-        //    finDashboardDbContext.Transactions.Add(transaction);
+            if (holding == null)
+            {
+                throw new CustomException("Holding for the specified stock not found", 404);
+            }
 
-        //    decimal totalSaleAmount = sellStockDto.Quantity * sellStockDto.PurchasePrice;//assuming purchase price and selling current price
-        //    decimal proportion = sellStockDto.Quantity / holding.Quantity;
-        //    decimal totalInvestedForSoldShares = holding.TotalInvested * proportion;
-        //    decimal profitOrLoss = totalSaleAmount - totalInvestedForSoldShares;
+            if (holding.Quantity < addHoldingDto.Quantity)
+            {
+                throw new CustomException("Cannot sell more quantity than you hold", 400);
+            }
+            holding.Quantity -= addHoldingDto.Quantity;
+            var returnReceived = addHoldingDto.Quantity * holding.CurrentPrice;
+            var priceToDeduct = addHoldingDto.Quantity * holding.PurchasePrice;
+            holding.TotalInvested -= priceToDeduct;
+            portfolio.InvestedValue -= priceToDeduct;
+            portfolio.CurrentValue -= returnReceived;
 
-        //    holding.Quantity -= sellStockDto.Quantity;
-        //    holding.TotalInvested -= totalInvestedForSoldShares;
+            if (holding.Quantity == 0)
+            {
+                portfolio.Holdings.Remove(holding);
+            }
 
-        //    if (holding.Quantity == 0)
-        //    {
-        //        finDashboardDbContext.Holdings.Remove(holding);
-        //    }
-        //    portfolio.InvestedValue -= totalInvestedForSoldShares;
-        //    portfolio.CurrentValue -= totalInvestedForSoldShares;
-        //    finDashboardDbContext.SaveChanges();
-        //}
+            var transaction = new Transaction()
+            {
+                Quantity = addHoldingDto.Quantity,
+                PricePerUnit = holding.CurrentPrice,
+                TransactioDate = DateTime.Now,
+                TransactionType = "Sell",
+                PortfolioID = portfolio.PortfolioId,
+                StockID = holding.StockID,
+            };
+            finDashboardDbContext.Transactions.Add(transaction);
+            finDashboardDbContext.SaveChanges();
+            return true;
+        }
+
     }
 }
