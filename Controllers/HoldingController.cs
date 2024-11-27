@@ -17,6 +17,11 @@ namespace FinDashboard.API.Controllers
             this.holdingRepository = holdingRepository;
         }
 
+        /// <summary>
+        /// Initiates a purchase of stock for a specified user. 
+        /// </summary>
+        /// <param name="addHoldingDto"></param>
+        /// <returns></returns>
         [HttpPost]
         public IActionResult AddStock(AddHoldingDto addHoldingDto)
         {
@@ -35,6 +40,11 @@ namespace FinDashboard.API.Controllers
             }
         }
 
+        /// <summary>
+        /// Initiates a sale of stock for a specified user.
+        /// </summary>
+        /// <param name="addHoldingDto"></param>
+        /// <returns></returns>
         [HttpDelete]
         public IActionResult SellUserStock(AddHoldingDto addHoldingDto)
         {

@@ -19,6 +19,12 @@ namespace FinDashboard.API.Repository
             this.finHubService = finHubService;
         }
 
+        /// <summary>
+        /// Adds a new stock to the stock list
+        /// </summary>
+        /// <param name="addStockDto"></param>
+        /// <returns></returns>
+        /// <exception cref="CustomException"></exception>
         public async Task<bool> AddStock(AddStockDto addStockDto)
         {
             if (addStockDto.StockName == "")
@@ -62,6 +68,14 @@ namespace FinDashboard.API.Repository
 
         }
 
+        /// <summary>
+        /// Updates the stock to the stock list
+        /// </summary>
+        /// <param name="stockId"></param>
+        /// <param name="updateStockDto"></param>
+        /// <returns></returns>
+        /// <exception cref="CustomException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         public async Task<bool> UpdateStock(int stockId, UpdateStockDto updateStockDto)
         {
             if (updateStockDto == null)
@@ -70,7 +84,7 @@ namespace FinDashboard.API.Repository
             }
 
             var getStock = finDashboardDbContext.Stock.FirstOrDefault(stock => stock.StockID == stockId);
-            
+
             var stockData = await finHubService.GetCurrentStockPriceAsync(getStock.StockName);
 
             if (getStock != null)
@@ -108,6 +122,13 @@ namespace FinDashboard.API.Repository
                 return false;
             }
         }
+
+        /// <summary>
+        /// Deletes stock from the stock list.
+        /// </summary>
+        /// <param name="stockId"></param>
+        /// <returns></returns>
+        /// <exception cref="CustomException"></exception>
         public bool DeleteStock(int stockId)
         {
             if (stockId < 0)
@@ -126,6 +147,11 @@ namespace FinDashboard.API.Repository
                 throw new CustomException($"User with is StockId: {stockId} not found", 200);
             }
         }
+
+        /// <summary>
+        /// Retrives all stocks from the stock list.
+        /// </summary>
+        /// <returns></returns>
         public List<Stock> GetAllStock()
         {
             var allStocks = finDashboardDbContext.Stock.ToList();

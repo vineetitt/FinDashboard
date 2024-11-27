@@ -4,7 +4,7 @@ using FinDashboard.API.Models.DTOs.UserDto;
 using FinDashboard.API.Repository.IRepository;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using FinDashboard.API.Utilities;
+
 using System;
 using BCrypt.Net;
 
@@ -28,6 +28,15 @@ namespace FinDashboard.API.Repository
         public bool VerifyPassword(string password, string hashedPassword)
         {
             return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+        }
+        public User GetUserByEmail(string email)
+        {
+            var user = finDashboardDbContext.Users.FirstOrDefault(u => u.Email == email);
+            if (user != null)
+            {
+                return user;
+            }
+            throw new CustomException("User with this email not found", 200);
         }
         public bool AddUser(User user)
         {
@@ -58,7 +67,8 @@ namespace FinDashboard.API.Repository
         {
             var user = finDashboardDbContext.Users
                 .Include(u => u.Portfolio)
-                    .ThenInclude(p => p.Holdings)
+                //.ThenInclude(p => p.Holdings)
+                .ThenInclude(p => p.Transactions)
                 .FirstOrDefault(u => u.UserID == userId);
             if (user != null)
             {
@@ -125,5 +135,6 @@ namespace FinDashboard.API.Repository
                 throw new CustomException($"Failed to delete user with userId: {id}", 500);
             }
         }
+
     }
 }

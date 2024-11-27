@@ -20,7 +20,12 @@ namespace FinDashboard.API.Controllers
             this.portfolioRepository = portfolioRepository;
         }
 
-        [HttpGet("getAllUser")]
+        /// <summary>
+        /// Retrieves a portfolio by the specified user ID.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpGet]
         public IActionResult GetPortfolioByUserId(int userId)
         {
             try
@@ -38,6 +43,12 @@ namespace FinDashboard.API.Controllers
             }
         }
 
+        /// <summary>
+        /// Updates the portfolio by specified user ID.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="investedValue"></param>
+        /// <returns></returns>
         [HttpPatch]
         public IActionResult UpdatePortfolioByUserId(int userId, int investedValue)
         {
@@ -57,6 +68,11 @@ namespace FinDashboard.API.Controllers
 
         }
 
+        /// <summary>
+        /// Adds a portfolio by the specified user ID.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         [HttpPost]
         public IActionResult AddPortfolioByUserId(int userId)
         {
@@ -71,7 +87,7 @@ namespace FinDashboard.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
 

@@ -8,7 +8,7 @@
         public decimal PurchasePrice { get; set; }
         public decimal TotalInvested { get; set; }
         public decimal CurrentPrice {  get; set; }
-        public decimal ProfitLoss => (Quantity * Stock.CurrentPrice) - TotalInvested;
+        public decimal ProfitLoss => CurrentPrice - PurchasePrice;
         public int PortfolioID { get; set; }
         public virtual Portfolio Portfolio { get; set; }
         public virtual Stock Stock { get; set; }
