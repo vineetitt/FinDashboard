@@ -1,11 +1,13 @@
 ﻿using FinDashboard.API.Models.DTOs;
 using FinDashboard.API.Models.DTOs.HoldingDto;
 using FinDashboard.API.Repository.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FinDashboard.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class HoldingController : ControllerBase

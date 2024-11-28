@@ -2,11 +2,13 @@
 using FinDashboard.API.Models.Domain;
 using FinDashboard.API.Repository;
 using FinDashboard.API.Repository.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinDashboard.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PortfolioController : ControllerBase

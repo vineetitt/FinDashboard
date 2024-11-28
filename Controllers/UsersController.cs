@@ -11,6 +11,7 @@ using Microsoft.Identity.Client;
 
 namespace FinDashboard.API.Controllers
 {
+    
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -77,6 +78,7 @@ namespace FinDashboard.API.Controllers
         /// </summary>
         /// <param name="addUserDto"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost]
         public IActionResult AddUser([FromBody] AddUserDto addUserDto)
         {
@@ -116,6 +118,7 @@ namespace FinDashboard.API.Controllers
         /// </summary>
         /// <param name="userid"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpGet]
         public IActionResult GetUserById(int userid)
         {
@@ -140,6 +143,7 @@ namespace FinDashboard.API.Controllers
         /// <param name="userId"></param>
         /// <param name="updateUserDto"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPut("{userId}")]
         public IActionResult UpdateUserById(int userId, [FromBody] UpdateUserDto updateUserDto)
         {
@@ -163,6 +167,7 @@ namespace FinDashboard.API.Controllers
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpDelete]
         public IActionResult DeleteUserById(int userId)
         {

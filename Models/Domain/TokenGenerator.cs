@@ -23,7 +23,9 @@ namespace FinDashboard.API.Models.Domain
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
                     new Claim(ClaimTypes.Email, user.Email),
-                    new Claim(ClaimTypes.Name, user.Username)
+                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Role, "Admin"), 
+                    new Claim("Permission", "Read")
 
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
