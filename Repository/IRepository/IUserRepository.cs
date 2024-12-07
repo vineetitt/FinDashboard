@@ -13,6 +13,4 @@ namespace FinDashboard.API.Repository.IRepository
         bool DeleteUserById(int id);
     }
 
-
-
 }

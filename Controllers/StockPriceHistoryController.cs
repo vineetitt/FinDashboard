@@ -10,11 +10,11 @@ namespace FinDashboard.API.Controllers
     [ApiController]
     public class StockPriceHistoryController : ControllerBase
     {
-        private readonly IStockPriceHistoryRepository stockPriceHistoryRepository;
+        private readonly IUnitOfWorkRepository unitOfWorkRepository;
 
-        public StockPriceHistoryController(IStockPriceHistoryRepository stockPriceHistoryRepository)
+        public StockPriceHistoryController(IUnitOfWorkRepository unitOfWorkRepository)
         {
-            this.stockPriceHistoryRepository = stockPriceHistoryRepository;
+            this.unitOfWorkRepository = unitOfWorkRepository;
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace FinDashboard.API.Controllers
         {
             try
             {
-                var StockPrice = stockPriceHistoryRepository.GetStockPriceHistoryByStockID(stockID, date);
+                var StockPrice = unitOfWorkRepository.StockPriceHistoryRepository.GetStockPriceHistoryByStockID(stockID, date);
                 return Ok(StockPrice);
             }
             catch (CustomException ex)

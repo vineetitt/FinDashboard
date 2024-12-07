@@ -36,24 +36,19 @@ namespace FinDashboard.API.Repository
             {
                 return user;
             }
-            throw new CustomException("User with this email not found", 200);
+            throw new CustomException("User with this email not found", 404);
         }
         public bool AddUser(User user)
         {
+
             var existingUser = finDashboardDbContext.Users.FirstOrDefault(u => u.Email == user.Email || u.Username == user.Username);
 
             if (existingUser != null)
             {
-                if (existingUser.IsActive == false)
-                {
-                    existingUser.IsActive = true;
-                }
-                else
-                {
                     throw new CustomException("User with either such username or email already exists", 400);
-                }
 
             }
+
 
             var hashedPassword = HashPassword(user.PasswordHash);
             user.PasswordHash = hashedPassword;

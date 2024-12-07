@@ -13,11 +13,11 @@ namespace FinDashboard.API.Controllers
     
     public class StockController : ControllerBase
     {
-        private readonly IStockRepository stockRepository;
+        private readonly IUnitOfWorkRepository unitOfWorkRepository;
 
-        public StockController(IStockRepository stockRepository)
+        public StockController(IUnitOfWorkRepository unitOfWorkRepository)
         {
-            this.stockRepository = stockRepository;
+            this.unitOfWorkRepository = unitOfWorkRepository;
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace FinDashboard.API.Controllers
         {
             try
             {
-                var isAssetAdded = await stockRepository.AddStock(addStockDto);
+                var isAssetAdded = await unitOfWorkRepository.StockRepository.AddStock(addStockDto);
                 return Ok("Added");
             }
             catch (Exception ex)
@@ -51,7 +51,7 @@ namespace FinDashboard.API.Controllers
         {
             try
             {
-                var isUpdatedStock = stockRepository.UpdateStock(stockId, updateStockDto);
+                var isUpdatedStock = unitOfWorkRepository.StockRepository.UpdateStock(stockId, updateStockDto);
                 return Ok("updated");
             }
             catch (CustomException ex)
@@ -75,7 +75,7 @@ namespace FinDashboard.API.Controllers
         {
             try
             {
-                var isStockDeleted = stockRepository.DeleteStock(stockId);
+                var isStockDeleted = unitOfWorkRepository.StockRepository.DeleteStock(stockId);
                 return Ok("Deleted");
             }
             catch (CustomException ex)
@@ -98,7 +98,7 @@ namespace FinDashboard.API.Controllers
         {
             try
             {
-                var getStocks = stockRepository.GetAllStock();
+                var getStocks = unitOfWorkRepository.StockRepository.GetAllStock();
                 return Ok(getStocks);
             }
             catch (Exception ex)

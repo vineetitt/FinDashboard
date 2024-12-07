@@ -5,7 +5,7 @@ namespace FinDashboard.API.Data
 {
     public class FinDashboardDbContext : DbContext
     {
-        public FinDashboardDbContext(DbContextOptions dbContextOptions) : base(dbContextOptions)
+        public FinDashboardDbContext(DbContextOptions<FinDashboardDbContext> dbContextOptions) : base(dbContextOptions)
         {
         }
 

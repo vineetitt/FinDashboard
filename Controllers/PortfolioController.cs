@@ -13,13 +13,11 @@ namespace FinDashboard.API.Controllers
     [ApiController]
     public class PortfolioController : ControllerBase
     {
-        private readonly FinDashboardDbContext finDashboardDbContext;
-        private readonly IPortfolioRepository portfolioRepository;
+        private readonly IUnitOfWorkRepository unitOfWorkRepository;
 
-        public PortfolioController(FinDashboardDbContext finDashboardDbContext, IPortfolioRepository portfolioRepository)
+        public PortfolioController(IUnitOfWorkRepository unitOfWorkRepository)
         {
-            this.finDashboardDbContext = finDashboardDbContext;
-            this.portfolioRepository = portfolioRepository;
+            this.unitOfWorkRepository = unitOfWorkRepository;
         }
 
         /// <summary>
@@ -32,7 +30,7 @@ namespace FinDashboard.API.Controllers
         {
             try
             {
-                var getPortfolio = portfolioRepository.GetPortfolioByUserId(userId);
+                var getPortfolio = unitOfWorkRepository.PortfolioRepository.GetPortfolioByUserId(userId);
                 return Ok(getPortfolio);
             }
             catch (CustomException ex)
@@ -56,7 +54,7 @@ namespace FinDashboard.API.Controllers
         {
             try
             {
-                var isPortfolioUpdated = portfolioRepository.UpdatePortfolioByUserId(userId, investedValue);
+                var isPortfolioUpdated = unitOfWorkRepository.PortfolioRepository.UpdatePortfolioByUserId(userId, investedValue);
                 return Ok("Updated");
             }
             catch (CustomException ex)
@@ -80,7 +78,7 @@ namespace FinDashboard.API.Controllers
         {
             try
             {
-                var isPortfolioCreated = portfolioRepository.AddPortfolioByUserId(userId);
+                var isPortfolioCreated = unitOfWorkRepository.PortfolioRepository.AddPortfolioByUserId(userId);
                 return Ok("added");
             }
             catch (CustomException ex)

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client;
+using System.Text.RegularExpressions;
 
 
 namespace FinDashboard.API.Controllers
@@ -16,14 +17,12 @@ namespace FinDashboard.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly FinDashboardDbContext _dbContext;
-        private readonly IUserRepository userRepository;
         private readonly TokenGenerator tokenGenerator;
+        private readonly IUnitOfWorkRepository unitOfWorkRepository;
 
-        public UsersController(FinDashboardDbContext dbContext, IUserRepository userRepository , TokenGenerator tokenGenerator)
+        public UsersController(IUnitOfWorkRepository unitOfWorkRepository , TokenGenerator tokenGenerator)
         {
-            _dbContext = dbContext;
-            this.userRepository = userRepository;
+            this.unitOfWorkRepository = unitOfWorkRepository;
             this.tokenGenerator = tokenGenerator;
         }
 
@@ -41,15 +40,15 @@ namespace FinDashboard.API.Controllers
                 {
                     return BadRequest("Email or Password is missing.");
                 }
-                var user = userRepository.GetUserByEmail(loginDto.Email);
-                if (user == null)
-                {
-                    return Unauthorized("Invalid email or password.");
-                }
-                var isPasswordValid = userRepository.VerifyPassword(loginDto.Password, user.PasswordHash);
+                var user = unitOfWorkRepository.UserRepository.GetUserByEmail(loginDto.Email);
+                //if (user == null)
+                //{
+                //    return Unauthorized("Invalid email or password.");
+                //}
+                var isPasswordValid = unitOfWorkRepository.UserRepository.VerifyPassword(loginDto.Password, user.PasswordHash);
                 if (!isPasswordValid)
                 {
-                    return Unauthorized("Invalid email or password.");
+                    return Unauthorized("The credentials you entered are incorrect. Please try again");
                 }
                 var token = tokenGenerator.GenerateToken(user);
                 return Ok(new
@@ -78,17 +77,24 @@ namespace FinDashboard.API.Controllers
         /// </summary>
         /// <param name="addUserDto"></param>
         /// <returns></returns>
-        [Authorize]
+       
         [HttpPost]
         public IActionResult AddUser([FromBody] AddUserDto addUserDto)
         {
             try
             {
-                if (addUserDto == null || string.IsNullOrEmpty(addUserDto.Email) || string.IsNullOrEmpty(addUserDto.UserName))
+                if (addUserDto == null || string.IsNullOrEmpty(addUserDto.Email))
                 {
-                    return BadRequest("Invalid user data");
+                    throw new Exception("Please Enter Email");
                 }
-
+                if (addUserDto.UserName == null)
+                {
+                    return BadRequest("Please Enter Username ");
+                }
+                if(addUserDto.HashPassword == null)
+                {
+                    return BadRequest("Please Enter Password");
+                }
                 var user = new User()
                 {
                     Username = addUserDto.UserName,
@@ -100,7 +106,7 @@ namespace FinDashboard.API.Controllers
                     }
                 };
 
-                var createdUser = userRepository.AddUser(user);
+                var createdUser = unitOfWorkRepository.UserRepository.AddUser(user);
                 return Ok();
             }
             catch (CustomException ex)
@@ -124,7 +130,7 @@ namespace FinDashboard.API.Controllers
         {
             try
             {
-                var resultedUser = userRepository.GetUserById(userid);
+                var resultedUser = unitOfWorkRepository.UserRepository.GetUserById(userid);
                 return Ok(resultedUser);
             }
             catch (CustomException ex)
@@ -149,7 +155,7 @@ namespace FinDashboard.API.Controllers
         {
             try
             {
-                var isUpdated = userRepository.UpdateUser(userId, updateUserDto);
+                var isUpdated = unitOfWorkRepository.UserRepository.UpdateUser(userId, updateUserDto);
                 return Ok();
             }
             catch (CustomException ex)
@@ -173,7 +179,7 @@ namespace FinDashboard.API.Controllers
         {
             try
             {
-                var isUserDeleted = userRepository.DeleteUserById(userId);
+                var isUserDeleted = unitOfWorkRepository.UserRepository.DeleteUserById(userId);
                 return Ok();
             }
             catch (CustomException ex)

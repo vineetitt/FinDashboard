@@ -17,14 +17,15 @@ namespace FinDashboard.API.Repository
 
         public IEnumerable<StockPriceHistoryDto> GetStockPriceHistoryByStockID(int stockID, DateTime date)
         {
+            DateTime startDate = date.AddDays(-6);
             var stockPriceList = finDashboardDbContext.StockPriceHistories
                 .Include(s=>s.Stock)
-                .Where(s => s.StockID == stockID && s.Date.Date == date.Date)
+                .Where(s => s.StockID == stockID && s.Date.Date >= startDate && s.Date<= date.Date)
                 .Select(s=>new StockPriceHistoryDto
                 {
                     StockID = stockID,
                     StockName = s.Stock.StockName,
-                    Date = date,
+                    Date = s.Date,
                     Price = s.Price,
                     Id = s.StockPriceHistoryID
                 })

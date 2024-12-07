@@ -72,12 +72,13 @@ namespace FinDashboard.API.Repository
                         .Include(p => p.Portfolio)
                             .ThenInclude(h => h.Holdings)
                         .FirstOrDefault(u => u.UserID == addHoldingDto.UserId);
-
+            
             if (user == null)
             {
                 throw new CustomException("User not found", 404);
             }
 
+            
             var portfolio = user.Portfolio;
 
             if (portfolio == null)
@@ -85,7 +86,6 @@ namespace FinDashboard.API.Repository
                 throw new CustomException("Portfolio not found for the user", 404);
             }
             var holding = portfolio.Holdings.FirstOrDefault(h => h.StockID == addHoldingDto.StockId);
-
             if (holding == null)
             {
                 throw new CustomException("Holding for the specified stock not found", 404);

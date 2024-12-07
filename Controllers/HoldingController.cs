@@ -12,11 +12,13 @@ namespace FinDashboard.API.Controllers
     [ApiController]
     public class HoldingController : ControllerBase
     {
-        private readonly IHoldingRepository holdingRepository;
+        //private readonly IHoldingRepository holdingRepository;
+        private readonly IUnitOfWorkRepository unitOfWorkRepository;
 
-        public HoldingController(IHoldingRepository holdingRepository)
+        public HoldingController(IUnitOfWorkRepository unitOfWorkRepository)
         {
-            this.holdingRepository = holdingRepository;
+            //this.holdingRepository = holdingRepository;
+            this.unitOfWorkRepository = unitOfWorkRepository;
         }
 
         /// <summary>
@@ -29,7 +31,7 @@ namespace FinDashboard.API.Controllers
         {
             try
             {
-                holdingRepository.BuyStock(addHoldingDto);
+                unitOfWorkRepository.HoldingRepository.BuyStock(addHoldingDto);
                 return Ok();
             }
             catch (CustomException ex)
@@ -52,7 +54,7 @@ namespace FinDashboard.API.Controllers
         {
             try
             {
-                var isStockSold = holdingRepository.SellUserStock(addHoldingDto);
+                var isStockSold = unitOfWorkRepository.HoldingRepository.SellUserStock(addHoldingDto);
                 return Ok("Stock Sold");
             }
             catch (CustomException ex)

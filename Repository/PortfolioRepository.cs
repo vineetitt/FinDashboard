@@ -25,6 +25,7 @@ namespace FinDashboard.API.Repository
             //var getPortfolio = finDashboardDbContext.Portfolios.FirstOrDefault(portfolio => portfolio.UserId == userId);
             var getPortfolio = finDashboardDbContext.Portfolios
                 .Include(p => p.Holdings)
+                    .ThenInclude(h=>h.Stock)
                 .Include(t=>t.Transactions)
                 .FirstOrDefault(p => p.UserId == userId);
             

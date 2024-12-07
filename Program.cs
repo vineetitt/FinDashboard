@@ -11,8 +11,19 @@ using FinDashboard.API.Models.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // Add your frontend URL here
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -53,9 +64,12 @@ builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
 builder.Services.AddScoped<IStockRepository, StockRepository>();
 builder.Services.AddScoped<IHoldingRepository, HoldingRepository>();
 builder.Services.AddScoped<IStockPriceHistoryRepository, StockPriceHistoryRepository>();
+builder.Services.AddScoped<IUnitOfWorkRepository, UnitOfWorkRepository>();
 builder.Services.AddHostedService<StockDataUpdater>();
 builder.Services.AddDbContext<FinDashboardDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("FinDashboardConnectionString")));
+builder.Services.AddDbContext<AuthDbContext>(options =>
+options.UseSqlServer(builder.Configuration.GetConnectionString("FinDashboardAuthConnectionString")));
 builder.Services.AddHttpClient<FinHubService>();
 builder.Services.AddScoped<TokenGenerator>();
 
@@ -89,6 +103,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+app.UseCors("AllowSpecificOrigin");
 
 if (app.Environment.IsDevelopment())
 {
