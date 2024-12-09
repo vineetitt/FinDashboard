@@ -98,6 +98,7 @@ namespace FinDashboard.API.Repository
             holding.Quantity -= addHoldingDto.Quantity;
             var returnReceived = addHoldingDto.Quantity * holding.CurrentPrice;
             var priceToDeduct = addHoldingDto.Quantity * holding.PurchasePrice;
+            var profitMoney = returnReceived - priceToDeduct;
             holding.TotalInvested -= priceToDeduct;
             portfolio.InvestedValue -= priceToDeduct;
             portfolio.CurrentValue -= returnReceived;
@@ -117,7 +118,12 @@ namespace FinDashboard.API.Repository
                 StockID = holding.StockID,
             };
             finDashboardDbContext.Transactions.Add(transaction);
-            finDashboardDbContext.SaveChanges();
+            var asset = finDashboardDbContext.Stock.FirstOrDefault(s => s.StockID == addHoldingDto.StockId);
+            if (asset != null)
+            {
+                asset.Quantity += addHoldingDto.Quantity;
+            }
+            
             return true;
         }
 

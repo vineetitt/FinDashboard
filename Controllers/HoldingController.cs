@@ -50,12 +50,18 @@ namespace FinDashboard.API.Controllers
         /// <param name="addHoldingDto"></param>
         /// <returns></returns>
         [HttpDelete]
-        public IActionResult SellUserStock(AddHoldingDto addHoldingDto)
+        public async Task<IActionResult> SellUserStock(AddHoldingDto addHoldingDto)
         {
             try
             {
                 var isStockSold = unitOfWorkRepository.HoldingRepository.SellUserStock(addHoldingDto);
-                return Ok("Stock Sold");
+                if (isStockSold)
+                {
+                    await unitOfWorkRepository.CompleteAsync();
+                    return Ok("Stock Sold");
+                }
+                return BadRequest("Failed to sell stock.");
+
             }
             catch (CustomException ex)
             {

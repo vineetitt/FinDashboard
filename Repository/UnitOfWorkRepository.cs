@@ -31,7 +31,20 @@ namespace FinDashboard.API.Repository
 
         public async Task<int> CompleteAsync()
         {
-            return await _context.SaveChangesAsync();
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var result = await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return result;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
         }
 
         public void Dispose()
