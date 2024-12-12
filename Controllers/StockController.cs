@@ -25,6 +25,7 @@ namespace FinDashboard.API.Controllers
         /// </summary>
         /// <param name="addStockDto"></param>
         /// <returns></returns>
+        [Authorize(Roles ="Admin")]
         [HttpPost]
         public async Task<IActionResult> AddStock(AddStockDto addStockDto)
         {
@@ -46,6 +47,7 @@ namespace FinDashboard.API.Controllers
         /// <param name="stockId"></param>
         /// <param name="updateStockDto"></param>
         /// <returns></returns>
+        [Authorize(Roles ="Admin")]
         [HttpPatch]
         public IActionResult UpdateStock(int stockId, UpdateStockDto updateStockDto)
         {
@@ -70,9 +72,10 @@ namespace FinDashboard.API.Controllers
         /// </summary>
         /// <param name="stockId"></param>
         /// <returns></returns>
-        [HttpDelete]
+        [Authorize(Roles ="Admin")]
+        [HttpDelete("{stockId}")]
         public IActionResult DeleteStock(int stockId)
-        {
+         {
             try
             {
                 var isStockDeleted = unitOfWorkRepository.StockRepository.DeleteStock(stockId);

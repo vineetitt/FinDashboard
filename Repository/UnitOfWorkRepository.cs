@@ -13,13 +13,17 @@ namespace FinDashboard.API.Repository
         public IHoldingRepository HoldingRepository { get; }
         public IStockPriceHistoryRepository StockPriceHistoryRepository { get; }
 
+        public IPortfolioPerformanceHistoryRepository PortfolioPerformanceHistoryRepository {  get; }
+
         public UnitOfWorkRepository(
         FinDashboardDbContext context,
         IUserRepository userRepository,
         IPortfolioRepository portfolioRepository,
         IStockRepository stockRepository,
         IHoldingRepository holdingRepository,
-        IStockPriceHistoryRepository stockPriceHistoryRepository)
+        IStockPriceHistoryRepository stockPriceHistoryRepository,
+        IPortfolioPerformanceHistoryRepository portfolioPerformanceHistoryRepository
+        )
         {
             _context = context;
             UserRepository = userRepository;
@@ -27,6 +31,7 @@ namespace FinDashboard.API.Repository
             StockRepository = stockRepository;
             HoldingRepository = holdingRepository;
             StockPriceHistoryRepository = stockPriceHistoryRepository;
+            PortfolioPerformanceHistoryRepository = portfolioPerformanceHistoryRepository;
         }
 
         public async Task<int> CompleteAsync()

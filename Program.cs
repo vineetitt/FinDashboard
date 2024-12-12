@@ -52,17 +52,32 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var token = context.Request.Headers["Authorization"];
+                
+            if (!string.IsNullOrEmpty(token))
+            {
+                context.Token = token.ToString()?.Split(" ")[1];
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
-});
+
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("AdminPolicy", policy =>
+                    policy.RequireRole("Admin"))
+    .AddPolicy("UserPolicy", policy =>
+                    policy.RequireRole("User"));
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
 builder.Services.AddScoped<IStockRepository, StockRepository>();
 builder.Services.AddScoped<IHoldingRepository, HoldingRepository>();
+builder.Services.AddScoped<IPortfolioPerformanceHistoryRepository, PortfolioPerformanceHistoryRepository>();
 builder.Services.AddScoped<IStockPriceHistoryRepository, StockPriceHistoryRepository>();
 builder.Services.AddScoped<IUnitOfWorkRepository, UnitOfWorkRepository>();
 builder.Services.AddHostedService<StockDataUpdater>();

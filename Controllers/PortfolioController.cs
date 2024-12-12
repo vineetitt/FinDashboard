@@ -26,6 +26,8 @@ namespace FinDashboard.API.Controllers
         /// <param name="userId"></param>
         /// <returns></returns>
         [HttpGet]
+        //[Authorize(Policy = "AdminPolicy")]
+        [Authorize]
         public IActionResult GetPortfolioByUserId(int userId)
         {
             try

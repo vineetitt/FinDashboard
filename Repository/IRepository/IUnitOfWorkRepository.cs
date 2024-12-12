@@ -7,7 +7,7 @@
         IStockRepository StockRepository { get; }
         IHoldingRepository HoldingRepository { get; }
         IStockPriceHistoryRepository StockPriceHistoryRepository { get; }
-
+        IPortfolioPerformanceHistoryRepository PortfolioPerformanceHistoryRepository { get; }
         Task<int> CompleteAsync();
     }
 }

@@ -58,7 +58,8 @@ namespace FinDashboard.API.Controllers
                     {
                         user.UserID,
                         user.Username,
-                        user.Email
+                        user.Email,
+                        user.Role
                     }
                 });
             }
@@ -100,6 +101,7 @@ namespace FinDashboard.API.Controllers
                     Username = addUserDto.UserName,
                     Email = addUserDto.Email,
                     PasswordHash = addUserDto.HashPassword,
+                    Role = addUserDto.Role ?? "User",
                     Portfolio = new Portfolio()
                     {
                         Holdings = new List<Holding>()
@@ -173,7 +175,7 @@ namespace FinDashboard.API.Controllers
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpDelete]
         public IActionResult DeleteUserById(int userId)
         {

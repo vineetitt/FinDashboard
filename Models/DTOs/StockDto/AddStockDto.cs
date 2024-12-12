@@ -4,6 +4,5 @@
     {
         public string StockName { get; set; } = string.Empty;
         public decimal Quantity { get; set; }
-        //public decimal CurrentPrice { get; set; }
     }
 }

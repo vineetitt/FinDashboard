@@ -38,6 +38,7 @@ namespace FinDashboard.API.Services
 
                         var stocks = dbContext.Stock.ToList();
                         var portfolioes = dbContext.Portfolios.ToList();
+                        var portfolioPerformanceHistory = dbContext.PortfolioPerformanceHistories.ToList();
                         var today = DateTime.UtcNow.Date;
 
                         foreach (var stock in stocks)
@@ -84,8 +85,28 @@ namespace FinDashboard.API.Services
                             var portfolioHoldings = dbContext.Holdings.Where(ph => ph.PortfolioID == portfolio.PortfolioId).ToList();
                             decimal currentValue = portfolioHoldings.Sum(ph => ph.CurrentPrice * ph.Quantity);
                             portfolio.CurrentValue = currentValue;
+
+                            var existingPerformance = dbContext.PortfolioPerformanceHistories.FirstOrDefault(pph => pph.PortfolioID == portfolio.PortfolioId && pph.Date == today);
+                            if (existingPerformance != null)
+                            {
+                                existingPerformance.PortfolioValue = currentValue;
+                                existingPerformance.InvestedValue = portfolio.InvestedValue;
+                            }
+                            else
+                            {
+                                var newPerformance = new PortfolioPerformanceHistory
+                                {
+                                    PortfolioID = portfolio.PortfolioId,
+                                    Date = today,
+                                    PortfolioValue = currentValue,
+                                    InvestedValue = portfolio.InvestedValue
+                                };
+                                dbContext.PortfolioPerformanceHistories.Add(newPerformance);
+                            }
                         }
                         await dbContext.SaveChangesAsync(stoppingToken);
+
+
                     }
                 }
                 catch (Exception ex)

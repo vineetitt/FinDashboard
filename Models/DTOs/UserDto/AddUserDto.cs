@@ -11,5 +11,7 @@ namespace FinDashboard.API.Models.DTOs.UserDto
         [RegularExpression(@"^(?=.*[a-zA-Z])(?=.*\d)(?=.*[\W]).{6,}$", ErrorMessage = "Password must be at least 6 characters long and include at least one letter, one number, and one special character.")]
         public string HashPassword { get; set; } = string.Empty;
 
+        public string Role { get; set; } = "User";
+
     }
 }

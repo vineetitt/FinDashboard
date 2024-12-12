@@ -9,6 +9,8 @@
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public bool IsActive { get; set; } = true;
 
+        public string Role { get; set; } = "User";
+
         public virtual Portfolio Portfolio { get; set; }
 
     }
