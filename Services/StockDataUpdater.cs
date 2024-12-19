@@ -16,12 +16,14 @@ namespace FinDashboard.API.Services
         private readonly ILogger<StockDataUpdater> _logger;
         private readonly FinHubService _finHubService;
         private readonly IServiceProvider _serviceProvider;
+        private readonly MqttService _mqttService;
 
-        public StockDataUpdater(ILogger<StockDataUpdater> logger, FinHubService finHubService, IServiceProvider serviceProvider)
+        public StockDataUpdater(ILogger<StockDataUpdater> logger, FinHubService finHubService, IServiceProvider serviceProvider, MqttService mqttService)
         {
             _logger = logger;
             _finHubService = finHubService;
             _serviceProvider = serviceProvider;
+            _mqttService = mqttService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -35,12 +37,10 @@ namespace FinDashboard.API.Services
                     using (var scope = _serviceProvider.CreateScope())
                     {
                         var dbContext = scope.ServiceProvider.GetRequiredService<FinDashboardDbContext>();
-
                         var stocks = dbContext.Stock.ToList();
                         var portfolioes = dbContext.Portfolios.ToList();
                         var portfolioPerformanceHistory = dbContext.PortfolioPerformanceHistories.ToList();
                         var today = DateTime.UtcNow.Date;
-
                         foreach (var stock in stocks)
                         {
                             var stockData = await _finHubService.GetCurrentStockPriceAsync(stock.StockName);
@@ -75,8 +75,33 @@ namespace FinDashboard.API.Services
                             foreach (var holding in holdings)
                             {
                                 holding.CurrentPrice = stock.CurrentPrice;
+
+
                             }
+                            var userID = holdings.FirstOrDefault()?.Portfolio?.UserId;
+
+
+                            var stockMessage = new
+                            {
+                                StockName = stock.StockName,
+                                CurrentPrice = stock.CurrentPrice,
+                                OpenPrice = stock.OpenPrice,
+                                HighPrice = stock.HighPrice,
+                                LowPrice = stock.LowPrice,
+                                ClosePrice = stock.ClosePrice,
+                                LastUpdated = DateTime.UtcNow,
+                                Quantity = stock.Quantity,
+                                userID = userID
+
+                            };
+
+                            await _mqttService.PublishAsync($"stocks/{stock.StockName}", stockMessage);
+                            var topic = $"stocks/{stock.StockName.ToUpper()}";
+                            await _mqttService.PublishAsync(topic, stockMessage);
+                            await _mqttService.PublishAsync($"orders/{stock.StockName.ToUpper()}/{userID}", stockMessage);
+
                         }
+
 
                         await dbContext.SaveChangesAsync(stoppingToken);
 
@@ -85,6 +110,7 @@ namespace FinDashboard.API.Services
                             var portfolioHoldings = dbContext.Holdings.Where(ph => ph.PortfolioID == portfolio.PortfolioId).ToList();
                             decimal currentValue = portfolioHoldings.Sum(ph => ph.CurrentPrice * ph.Quantity);
                             portfolio.CurrentValue = currentValue;
+
 
                             var existingPerformance = dbContext.PortfolioPerformanceHistories.FirstOrDefault(pph => pph.PortfolioID == portfolio.PortfolioId && pph.Date == today);
                             if (existingPerformance != null)
@@ -106,7 +132,6 @@ namespace FinDashboard.API.Services
                         }
                         await dbContext.SaveChangesAsync(stoppingToken);
 
-
                     }
                 }
                 catch (Exception ex)
@@ -114,8 +139,10 @@ namespace FinDashboard.API.Services
                     _logger.LogError(ex, "Error updating stock data.");
                 }
 
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
             }
+
         }
+
     }
 }

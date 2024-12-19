@@ -4,6 +4,7 @@ using FinDashboard.API.Repository.IRepository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace FinDashboard.API.Controllers
 {
@@ -54,8 +55,8 @@ namespace FinDashboard.API.Controllers
         {
             try
             {
-                var isStockSold = unitOfWorkRepository.HoldingRepository.SellUserStock(addHoldingDto);
-                if (isStockSold)
+                var isStockSold = await unitOfWorkRepository.HoldingRepository.SellUserStock(addHoldingDto);
+                if (isStockSold!=null)
                 {
                     await unitOfWorkRepository.CompleteAsync();
                     return Ok("Stock Sold");

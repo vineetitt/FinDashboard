@@ -3,6 +3,7 @@ using FinDashboard.API.Models.Domain;
 using FinDashboard.API.Models.DTOs;
 using FinDashboard.API.Models.DTOs.HoldingDto;
 using FinDashboard.API.Repository.IRepository;
+using FinDashboard.API.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinDashboard.API.Repository
@@ -10,13 +11,15 @@ namespace FinDashboard.API.Repository
     public class HoldingRepository : IHoldingRepository
     {
         private readonly FinDashboardDbContext finDashboardDbContext;
+        private readonly MqttService _mqttService;
 
-        public HoldingRepository(FinDashboardDbContext finDashboardDbContext)
+        public HoldingRepository(FinDashboardDbContext finDashboardDbContext, MqttService mqttService)
         {
             this.finDashboardDbContext = finDashboardDbContext;
+            _mqttService = mqttService;
         }
 
-        public void BuyStock(AddHoldingDto addHoldingDto)
+        public async Task BuyStock(AddHoldingDto addHoldingDto)
         {
             var user = finDashboardDbContext.Users.FirstOrDefault(u => u.UserID == addHoldingDto.UserId);
             finDashboardDbContext.Users
@@ -25,9 +28,13 @@ namespace FinDashboard.API.Repository
             var portfolio = user.Portfolio;
             var stock = finDashboardDbContext.Stock.FirstOrDefault(s => s.StockID == addHoldingDto.StockId);
 
-            if(stock == null)
+            if (stock == null)
             {
                 throw new CustomException($"Stock is not in the list ", 404);
+            }
+            if (addHoldingDto.Quantity > stock.Quantity)
+            {
+                throw new CustomException("Cannot purchase more quantity than its available in stock", 400);
             }
             var existingHolding = finDashboardDbContext.Holdings.FirstOrDefault(h => h.PortfolioID == portfolio.PortfolioId && h.StockID == addHoldingDto.StockId);
             if (existingHolding != null)
@@ -35,6 +42,7 @@ namespace FinDashboard.API.Repository
                 existingHolding.Quantity += addHoldingDto.Quantity;
                 existingHolding.TotalInvested += addHoldingDto.Quantity * stock.CurrentPrice;
                 existingHolding.CurrentPrice = stock.CurrentPrice;
+                stock.Quantity = stock.Quantity - addHoldingDto.Quantity;
             }
             else
             {
@@ -48,7 +56,8 @@ namespace FinDashboard.API.Repository
                     CurrentPrice = stock.CurrentPrice
                 };
                 finDashboardDbContext.Holdings.Add(newHolding);
-                stock.Quantity-=addHoldingDto.Quantity;
+                stock.Quantity = stock.Quantity - addHoldingDto.Quantity;
+                finDashboardDbContext.SaveChanges();                
             }
             portfolio.InvestedValue += addHoldingDto.Quantity * stock.CurrentPrice;
             portfolio.CurrentValue += addHoldingDto.Quantity * stock.CurrentPrice;
@@ -64,67 +73,93 @@ namespace FinDashboard.API.Repository
             };
             finDashboardDbContext.Transactions.Add(transaction);
             finDashboardDbContext.SaveChanges();
+            await _mqttService.PublishAsync("stocks/purchased", new
+            {
+                StockId = stock.StockID,
+                StockSymbol = stock.StockName,
+                UpdatedQuantity = stock.Quantity,
+                PurchasedQuantity = addHoldingDto.Quantity,
+                PurchasePrice = stock.CurrentPrice,
+                Timestamp = DateTime.UtcNow
+            });
         }
 
-        public bool SellUserStock(AddHoldingDto addHoldingDto)
+        public async Task<bool> SellUserStock(AddHoldingDto addHoldingDto)
         {
-            var user = finDashboardDbContext.Users
-                        .Include(p => p.Portfolio)
-                            .ThenInclude(h => h.Holdings)
-                        .FirstOrDefault(u => u.UserID == addHoldingDto.UserId);
-            
-            if (user == null)
+            try
             {
-                throw new CustomException("User not found", 404);
-            }
+                var user = finDashboardDbContext.Users
+                            .Include(p => p.Portfolio)
+                                .ThenInclude(h => h.Holdings)
+                            .FirstOrDefault(u => u.UserID == addHoldingDto.UserId);
 
-            
-            var portfolio = user.Portfolio;
+                if (user == null)
+                {
+                    throw new CustomException("User not found", 404);
+                }
 
-            if (portfolio == null)
-            {
-                throw new CustomException("Portfolio not found for the user", 404);
-            }
-            var holding = portfolio.Holdings.FirstOrDefault(h => h.StockID == addHoldingDto.StockId);
-            if (holding == null)
-            {
-                throw new CustomException("Holding for the specified stock not found", 404);
-            }
 
-            if (holding.Quantity < addHoldingDto.Quantity)
-            {
-                throw new CustomException("Cannot sell more quantity than you hold", 400);
-            }
-            holding.Quantity -= addHoldingDto.Quantity;
-            var returnReceived = addHoldingDto.Quantity * holding.CurrentPrice;
-            var priceToDeduct = addHoldingDto.Quantity * holding.PurchasePrice;
-            var profitMoney = returnReceived - priceToDeduct;
-            holding.TotalInvested -= priceToDeduct;
-            portfolio.InvestedValue -= priceToDeduct;
-            portfolio.CurrentValue -= returnReceived;
+                var portfolio = user.Portfolio;
 
-            if (holding.Quantity == 0)
-            {
-                portfolio.Holdings.Remove(holding);
-            }
+                if (portfolio == null)
+                {
+                    throw new CustomException("Portfolio not found for the user", 404);
+                }
+                var holding = portfolio.Holdings.FirstOrDefault(h => h.StockID == addHoldingDto.StockId);
+                if (holding == null)
+                {
+                    throw new CustomException("Holding for the specified stock not found", 404);
+                }
 
-            var transaction = new Transaction()
-            {
-                Quantity = addHoldingDto.Quantity,
-                PricePerUnit = holding.CurrentPrice,
-                TransactioDate = DateTime.Now,
-                TransactionType = "Sell",
-                PortfolioID = portfolio.PortfolioId,
-                StockID = holding.StockID,
-            };
-            finDashboardDbContext.Transactions.Add(transaction);
-            var asset = finDashboardDbContext.Stock.FirstOrDefault(s => s.StockID == addHoldingDto.StockId);
-            if (asset != null)
-            {
-                asset.Quantity += addHoldingDto.Quantity;
+                if (holding.Quantity < addHoldingDto.Quantity)
+                {
+                    throw new CustomException("Cannot sell more quantity than you hold", 400);
+                }
+                holding.Quantity -= addHoldingDto.Quantity;
+                var returnReceived = addHoldingDto.Quantity * holding.CurrentPrice;
+                var priceToDeduct = addHoldingDto.Quantity * holding.PurchasePrice;
+                var profitMoney = returnReceived - priceToDeduct;
+                holding.TotalInvested -= priceToDeduct;
+                portfolio.InvestedValue -= priceToDeduct;
+                portfolio.CurrentValue -= returnReceived;
+                portfolio.CurrentValue += profitMoney;
+
+                if (holding.Quantity == 0)
+                {
+                    portfolio.Holdings.Remove(holding);
+                }
+
+                var transaction = new Transaction()
+                {
+                    Quantity = addHoldingDto.Quantity,
+                    PricePerUnit = holding.CurrentPrice,
+                    TransactioDate = DateTime.Now,
+                    TransactionType = "Sell",
+                    PortfolioID = portfolio.PortfolioId,
+                    StockID = holding.StockID,
+                };
+                finDashboardDbContext.Transactions.Add(transaction);
+                var asset = finDashboardDbContext.Stock.FirstOrDefault(s => s.StockID == addHoldingDto.StockId);
+                if (asset != null)
+                {
+                    asset.Quantity += addHoldingDto.Quantity;
+                }
+                finDashboardDbContext.SaveChanges();
+                await _mqttService.PublishAsync("stocks/sold", new
+                {
+                    StockId = asset.StockID,
+                    StockSymbol = asset.StockName,
+                    UpdatedQuantity = asset.Quantity,
+                    Timestamp = DateTime.UtcNow
+                });
+
+
+                return true;
             }
-            
-            return true;
+            catch(Exception ex)
+            {
+                throw ex;
+            }
         }
 
     }

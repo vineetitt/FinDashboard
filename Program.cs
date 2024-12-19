@@ -19,17 +19,17 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // Add your frontend URL here
+        policy.WithOrigins("http://localhost:5173") 
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-builder.Services.AddControllers()
+builder.Services.AddControllers() //it resolves the infinite loop problem just bcoz two object refrencing to each other 
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull; //it will ingonre propr having null values
     });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -87,6 +87,7 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("FinDashboardAuthConnectionString")));
 builder.Services.AddHttpClient<FinHubService>();
 builder.Services.AddScoped<TokenGenerator>();
+builder.Services.AddSingleton<MqttService>();
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -98,7 +99,7 @@ builder.Services.AddSwaggerGen(options =>
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement {
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement {// makes sure all the api requires jwt token for access 
     {
         new OpenApiSecurityScheme
         {
@@ -111,9 +112,9 @@ builder.Services.AddSwaggerGen(options =>
         Array.Empty<string>()
     }
     });
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    options.IncludeXmlComments(xmlPath);
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";  // api documentation contains xml comments 
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);//generates xml file tht contains xml comments  
+    options.IncludeXmlComments(xmlPath); // tells swagger to include xml comments 
 
 });
 
@@ -132,5 +133,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+var mqttService = app.Services.GetRequiredService<MqttService>();
+Task.Run(async () =>
+{
+    await mqttService.ConnectAsync();
+}).GetAwaiter().GetResult();
+
 
 app.Run();

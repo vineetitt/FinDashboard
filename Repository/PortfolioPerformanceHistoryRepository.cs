@@ -51,7 +51,7 @@ namespace FinDashboard.API.Repository
 
         public IEnumerable<GetPortfolioPerformanceDto> GetPortfolioPerformancePriceHistory(int portfolioId, DateTime date)
         {
-            DateTime startDate = date.AddDays(-1);
+            DateTime startDate = date.AddDays(-5);
             var portfolioPerformanceHistory = finDashboardDbContext.PortfolioPerformanceHistories
                 .Where(p => p.PortfolioID == portfolioId && p.Date >= startDate && p.Date <= date)
                 .Select(p => new GetPortfolioPerformanceDto

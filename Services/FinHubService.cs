@@ -7,7 +7,7 @@ namespace FinDashboard.API.Services
     public class FinHubService
     {
         private readonly HttpClient _httpClient;
-        private readonly string _apiKey;
+        private readonly string ?_apiKey;
 
         public FinHubService(HttpClient httpClient, IConfiguration configuration)
         {
