@@ -25,8 +25,9 @@ namespace FinDashboard.API.Repository
         /// <param name="addStockDto"></param>
         /// <returns></returns>
         /// <exception cref="CustomException"></exception>
-        public async Task<bool> AddStock(AddStockDto addStockDto)
+        public async Task<Stock> AddStock(AddStockDto addStockDto)
         {
+            Stock resultedStock;
             if (addStockDto.StockName == "")
             {
                 throw new CustomException("Stock name cannot be empty", 400);
@@ -38,7 +39,6 @@ namespace FinDashboard.API.Repository
 
             var stockData = await finHubService.GetCurrentStockPriceAsync(addStockDto.StockName);
             var existingStock = finDashboardDbContext.Stock.FirstOrDefault(stock => stock.StockName == addStockDto.StockName);
-
             if (existingStock != null)
             {
                 existingStock.Quantity = existingStock.Quantity + addStockDto.Quantity;
@@ -47,10 +47,12 @@ namespace FinDashboard.API.Repository
                 existingStock.LowPrice = stockData.l;
                 existingStock.CurrentPrice = stockData.c;
                 existingStock.ClosePrice = stockData.pc;
+
+                resultedStock = existingStock;
             }
             else
             {
-                var stock = new Stock()
+                existingStock = new Stock()
                 {
                     StockName = addStockDto.StockName,
                     Quantity = addStockDto.Quantity,
@@ -59,12 +61,14 @@ namespace FinDashboard.API.Repository
                     ClosePrice = stockData.pc,
                     HighPrice = stockData.h,
                     LowPrice = stockData.l,
+
                 };
 
-                finDashboardDbContext.Stock.Add(stock);
+                finDashboardDbContext.Stock.Add(existingStock);
             }
             finDashboardDbContext.SaveChanges();
-            return true;
+            
+            return existingStock;
 
         }
 

@@ -32,7 +32,7 @@ namespace FinDashboard.API.Controllers
             try
             {
                 var isAssetAdded = await unitOfWorkRepository.StockRepository.AddStock(addStockDto);
-                return Ok("Added");
+                return Ok(isAssetAdded);
             }
             catch (Exception ex)
             {
