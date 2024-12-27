@@ -21,7 +21,7 @@ namespace FinDashboard.API.Controllers
             try
             {
                 var response = unitOfWorkRepository.PortfolioPerformanceHistoryRepository.AddPortfolioPerformancePrice(portfolioId, portfolioValue, investedValue);
-                return Ok("Added");
+                return Ok(response);
             }
             catch (CustomException ex)
             {

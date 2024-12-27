@@ -10,6 +10,7 @@
         public virtual User User { get; set; }
         public virtual ICollection<Holding> Holdings { get; set; } = new List<Holding>();
         public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+        public virtual ICollection<PortfolioPerformanceHistory> PortfolioPerformanceHistory { get; set; } = new List<PortfolioPerformanceHistory>();
 
     }
 }

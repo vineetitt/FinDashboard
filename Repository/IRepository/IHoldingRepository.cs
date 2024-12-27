@@ -7,6 +7,7 @@ namespace FinDashboard.API.Repository.IRepository
     public interface IHoldingRepository
     {
         Task BuyStock(AddHoldingDto addHoldingDto);
-        Task <bool> SellUserStock(AddHoldingDto addHoldingDto);
+        Task<bool> SellUserStock(AddHoldingDto addHoldingDto);
+        List<Holding> GetAllHolding();
     }
 }

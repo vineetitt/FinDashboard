@@ -28,6 +28,7 @@ namespace FinDashboard.API.Controllers
         /// <param name="addHoldingDto"></param>
         /// <returns></returns>
         [HttpPost]
+
         public IActionResult AddStock(AddHoldingDto addHoldingDto)
         {
             try
@@ -56,7 +57,7 @@ namespace FinDashboard.API.Controllers
             try
             {
                 var isStockSold = await unitOfWorkRepository.HoldingRepository.SellUserStock(addHoldingDto);
-                if (isStockSold!=null)
+                if (isStockSold != null)
                 {
                     await unitOfWorkRepository.CompleteAsync();
                     return Ok("Stock Sold");
@@ -73,6 +74,26 @@ namespace FinDashboard.API.Controllers
                 return BadRequest(ex.Message);
             }
 
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        [HttpGet]
+        public IActionResult GetAllHoldings()
+        {
+            try
+            {
+                var holdings = unitOfWorkRepository.HoldingRepository.GetAllHolding();
+                return Ok(holdings);
+
+            }
+            catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
     }

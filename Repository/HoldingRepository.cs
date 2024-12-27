@@ -24,6 +24,7 @@ namespace FinDashboard.API.Repository
             var user = finDashboardDbContext.Users.FirstOrDefault(u => u.UserID == addHoldingDto.UserId);
             finDashboardDbContext.Users
                 .Include(u => u.Portfolio)
+                    .ThenInclude(p => p.PortfolioPerformanceHistory)
                 .FirstOrDefault(u => u.UserID == addHoldingDto.UserId);
             var portfolio = user.Portfolio;
             var stock = finDashboardDbContext.Stock.FirstOrDefault(s => s.StockID == addHoldingDto.StockId);
@@ -57,10 +58,32 @@ namespace FinDashboard.API.Repository
                 };
                 finDashboardDbContext.Holdings.Add(newHolding);
                 stock.Quantity = stock.Quantity - addHoldingDto.Quantity;
-                finDashboardDbContext.SaveChanges();                
+                finDashboardDbContext.SaveChanges();
             }
             portfolio.InvestedValue += addHoldingDto.Quantity * stock.CurrentPrice;
             portfolio.CurrentValue += addHoldingDto.Quantity * stock.CurrentPrice;
+
+            var today = DateTime.Today;
+            var existingPerformanceHistory = user.Portfolio.PortfolioPerformanceHistory
+                .FirstOrDefault(p => p.Date == today);
+
+            if (existingPerformanceHistory != null)
+            {
+                existingPerformanceHistory.PortfolioValue = portfolio.CurrentValue;
+                existingPerformanceHistory.InvestedValue = portfolio.InvestedValue;
+            }
+            else
+            {
+                var performanceHistory = new PortfolioPerformanceHistory
+                {
+                    PortfolioID = portfolio.PortfolioId,
+                    Date = today,
+                    PortfolioValue = portfolio.CurrentValue,
+                    InvestedValue = portfolio.InvestedValue
+                };
+                user.Portfolio.PortfolioPerformanceHistory.Add(performanceHistory);
+            }
+
             finDashboardDbContext.SaveChanges();
             var transaction = new Transaction()
             {
@@ -83,7 +106,6 @@ namespace FinDashboard.API.Repository
                 Timestamp = DateTime.UtcNow
             });
         }
-
         public async Task<bool> SellUserStock(AddHoldingDto addHoldingDto)
         {
             try
@@ -91,6 +113,8 @@ namespace FinDashboard.API.Repository
                 var user = finDashboardDbContext.Users
                             .Include(p => p.Portfolio)
                                 .ThenInclude(h => h.Holdings)
+                            .Include(p => p.Portfolio)
+                                 .ThenInclude(ph => ph.PortfolioPerformanceHistory)
                             .FirstOrDefault(u => u.UserID == addHoldingDto.UserId);
 
                 if (user == null)
@@ -144,6 +168,27 @@ namespace FinDashboard.API.Repository
                 {
                     asset.Quantity += addHoldingDto.Quantity;
                 }
+
+                var today = DateTime.Today;
+                var existingPerformanceHistory = user.Portfolio.PortfolioPerformanceHistory
+                    .FirstOrDefault(p => p.Date == today);
+
+                if (existingPerformanceHistory != null)
+                {
+                    existingPerformanceHistory.PortfolioValue = portfolio.CurrentValue;
+                    existingPerformanceHistory.InvestedValue = portfolio.InvestedValue;
+                }
+                else
+                {
+                    var performanceHistory = new PortfolioPerformanceHistory
+                    {
+                        PortfolioID = portfolio.PortfolioId,
+                        Date = today,
+                        PortfolioValue = portfolio.CurrentValue,
+                        InvestedValue = portfolio.InvestedValue
+                    };
+                    user.Portfolio.PortfolioPerformanceHistory.Add(performanceHistory);
+                }
                 finDashboardDbContext.SaveChanges();
                 await _mqttService.PublishAsync("stocks/sold", new
                 {
@@ -156,10 +201,16 @@ namespace FinDashboard.API.Repository
 
                 return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
+        }
+
+        public List<Holding> GetAllHolding()
+        {
+            var holdings = finDashboardDbContext.Holdings.ToList();
+            return holdings;
         }
 
     }

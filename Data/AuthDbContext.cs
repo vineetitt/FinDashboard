@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FinDashboard.API.Data
 {
-    public class AuthDbContext: DbContext
+    public class AuthDbContext : DbContext
     {
         public AuthDbContext(DbContextOptions<AuthDbContext> dbContextOptions) : base(dbContextOptions)
         {
