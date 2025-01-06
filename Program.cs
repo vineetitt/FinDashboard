@@ -20,25 +20,25 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin", policy =>
     {
         policy.WithOrigins("http://localhost:5173") 
-              .AllowAnyHeader()
+              .AllowAnyHeader() 
               .AllowAnyMethod();
     });
 });
 
-builder.Services.AddControllers() //it resolves the infinite loop problem just bcoz two object refrencing to each other 
+builder.Services.AddControllers() //enables controllers that process req like get post put delete
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;//ignore or skip the properties of class which points to each other class
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull; //it will ingonre propr having null values
     });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddEndpointsApiExplorer(); //collect or document all the api endpoints all together
+builder.Services.AddSwaggerGen();//add swagger
 
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme; 
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;// if req is there without authorize then tell authorize first to avail it
 })
 .AddJwtBearer(options =>
 {

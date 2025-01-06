@@ -41,10 +41,7 @@ namespace FinDashboard.API.Controllers
                     return BadRequest("Email or Password is missing.");
                 }
                 var user = unitOfWorkRepository.UserRepository.GetUserByEmail(loginDto.Email);
-                //if (user == null)
-                //{
-                //    return Unauthorized("Invalid email or password.");
-                //}
+                
                 var isPasswordValid = unitOfWorkRepository.UserRepository.VerifyPassword(loginDto.Password, user.PasswordHash);
                 if (!isPasswordValid)
                 {

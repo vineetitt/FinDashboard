@@ -139,7 +139,7 @@ namespace FinDashboard.API.Services
                     _logger.LogError(ex, "Error updating stock data.");
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken);
             }
 
         }

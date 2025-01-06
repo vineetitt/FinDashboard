@@ -21,6 +21,9 @@ namespace FinDashboard.API.Services
             var options = new MqttClientOptionsBuilder()
                 .WithTcpServer("localhost", 1883)
                 .Build();
+            if (_mqttClient == null)
+                throw new InvalidOperationException("MQTT client is not initialized.");
+
 
             await _mqttClient.ConnectAsync(options);
         }

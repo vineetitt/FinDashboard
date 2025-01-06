@@ -2,7 +2,7 @@
 {
     public interface IUnitOfWorkRepository: IDisposable
     {
-        IUserRepository UserRepository { get; } //HERE I NEED TO UNDERSTAND THAT IT WILL RETURN INSTANCE OF A CLASS IMPLEMENTING THIS INTERFACE
+        IUserRepository UserRepository { get; } 
         IPortfolioRepository PortfolioRepository { get; }
         IStockRepository StockRepository { get; }
         IHoldingRepository HoldingRepository { get; }

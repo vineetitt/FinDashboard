@@ -19,7 +19,7 @@ namespace FinDashboard.API.Services
 
             _mqttClient.ApplicationMessageReceivedAsync +=async e =>
             {
-                var message = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+                var message = Encoding.UTF8.GetString(e.ApplicationMessage.PayloadSegment.ToArray());
                 Console.WriteLine($"Received message: {message} on topic: {e.ApplicationMessage.Topic}");
             };
 
